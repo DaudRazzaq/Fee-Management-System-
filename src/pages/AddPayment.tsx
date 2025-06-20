@@ -1,16 +1,100 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Layout from '../components/ui/Layout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
-import { addPayment, getAllStudents, getAllFeeStructures, Student, FeeStructure, Payment, ValidationError } from '../services/feeService';
+import { addPayment, getAllStudents, getAllFeeStructures, Student, FeeStructure, ValidationError } from '../services/feeService';
 import { useAuth } from '../context/AuthContext';
 
+// Animation keyframes
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const slideUp = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+// Success animation component
+const SuccessAnimation = ({ message = "Success!" }) => {
+  return (
+    <div style={{textAlign: 'center', padding: '40px 20px'}}>
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="36" fill="none" stroke="#10b981" strokeWidth="6" opacity="0">
+          <animate
+            attributeName="opacity"
+            from="0"
+            to="1"
+            dur="0.3s"
+            fill="freeze"
+          />
+          <animate 
+            attributeName="stroke-dasharray" 
+            from="0 226" 
+            to="226 226" 
+            dur="1s" 
+            fill="freeze" 
+          />
+        </circle>
+        <path 
+          d="M25,40 L36,52 L56,30" 
+          fill="none" 
+          stroke="#10b981" 
+          strokeWidth="6"
+          strokeDasharray="60"
+          strokeDashoffset="60"
+          opacity="0"
+        >
+          <animate 
+            attributeName="opacity" 
+            from="0" 
+            to="1" 
+            dur="0.3s" 
+            begin="0.4s" 
+            fill="freeze" 
+          />
+          <animate 
+            attributeName="stroke-dashoffset" 
+            from="60" 
+            to="0" 
+            dur="0.5s" 
+            begin="0.4s" 
+            fill="freeze" 
+          />
+        </path>
+      </svg>
+      <h3 style={{ 
+        marginTop: '20px', 
+        color: '#10b981',
+        opacity: 0,
+        animation: 'fadeIn 0.5s forwards',
+        animationDelay: '0.8s'
+      }}>{message}</h3>
+    </div>
+  );
+};
+
+// Styled components
 const Form = styled.form`
   display: flex;
   flex-direction: column;
+  animation: ${fadeIn} 0.4s ease forwards;
 `;
 
 const FormRow = styled.div`
@@ -35,11 +119,12 @@ const Select = styled.select`
   font-size: 16px;
   color: #1e293b;
   background-color: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
   
   &:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.2);
   }
   
   &:disabled {
@@ -62,6 +147,7 @@ const ErrorMessage = styled.div`
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 16px;
+  animation: ${slideUp} 0.3s ease forwards;
 `;
 
 const InfoCard = styled.div`
@@ -70,6 +156,12 @@ const InfoCard = styled.div`
   border-radius: 8px;
   padding: 16px;
   margin-top: 8px;
+  animation: ${slideUp} 0.3s ease forwards;
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const InfoField = styled.div`
@@ -96,6 +188,7 @@ const SuccessMessage = styled.div`
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 16px;
+  animation: ${slideUp} 0.3s ease forwards;
 `;
 
 // Fee Items table styling
@@ -103,6 +196,7 @@ const FeeItemsTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
+  animation: ${fadeIn} 0.4s ease forwards;
 `;
 
 const TableHeader = styled.th`
@@ -126,14 +220,40 @@ const RemoveButton = styled.button`
   font-size: 14px;
   padding: 4px 8px;
   border-radius: 4px;
+  transition: background-color 0.2s;
   
   &:hover {
     background-color: #fee2e2;
   }
 `;
 
-const AddItemButton = styled(Button)`
+const AddItemButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
   margin-bottom: 20px;
+  
+  &:hover {
+    background-color: #bae6fd;
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const TotalAmount = styled.div`
@@ -142,7 +262,10 @@ const TotalAmount = styled.div`
   color: #1e293b;
   text-align: right;
   margin-bottom: 20px;
-  padding-right: 10px;
+  padding: 10px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  animation: ${slideUp} 0.3s ease forwards;
 `;
 
 interface FeeItem {
@@ -160,7 +283,7 @@ interface PaymentFormData {
   receiptNumber: string;
   status: 'paid' | 'pending' | 'overdue';
   createdBy: string;
-  feeItems: FeeItem[]; // New field to store multiple fee items
+  feeItems: FeeItem[]; // Array to store multiple fee items
 }
 
 const AddPayment: React.FC = () => {
@@ -169,12 +292,13 @@ const AddPayment: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   
   const [students, setStudents] = useState<Student[]>([]);
   const [feeStructures, setFeeStructures] = useState<FeeStructure[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   
-  // New state for handling fee item selection
+  // State for handling fee item selection
   const [currentFeeStructureId, setCurrentFeeStructureId] = useState<string>('');
   const [currentFeeAmount, setCurrentFeeAmount] = useState<number>(0);
   
@@ -314,6 +438,10 @@ const AddPayment: React.FC = () => {
     }));
   };
   
+  const handleFeeAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentFeeAmount(parseFloat(e.target.value) || 0);
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -346,21 +474,27 @@ const AddPayment: React.FC = () => {
         await addPayment(paymentData);
       }
       
-      setSuccess('Payments recorded successfully!');
+      // Show success animation
+      setShowSuccessAnimation(true);
       
-      // Reset form with a new receipt number
-      setFormData({
-        studentId: '',
-        amount: 0,
-        paymentDate: new Date().toISOString().split('T')[0],
-        paymentMethod: 'cash',
-        receiptNumber: generateReceiptNumber(),
-        status: 'paid',
-        createdBy: user?.uid || '',
-        feeItems: []
-      });
-      
-      setSelectedStudent(null);
+      // Reset form after a delay (after animation)
+      setTimeout(() => {
+        setFormData({
+          studentId: '',
+          amount: 0,
+          paymentDate: new Date().toISOString().split('T')[0],
+          paymentMethod: 'cash',
+          receiptNumber: generateReceiptNumber(),
+          status: 'paid',
+          createdBy: user?.uid || '',
+          feeItems: []
+        });
+        
+        setSelectedStudent(null);
+        setSuccess('Payments recorded successfully!');
+        setShowSuccessAnimation(false);
+        setLoading(false);
+      }, 2500);
       
     } catch (err) {
       if (err instanceof ValidationError) {
@@ -369,10 +503,34 @@ const AddPayment: React.FC = () => {
         setError('Failed to record payment. Please try again.');
         console.error(err);
       }
-    } finally {
       setLoading(false);
     }
   };
+  
+  // Show success animation when payment is successful
+  if (showSuccessAnimation) {
+    return (
+      <Layout>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '80vh' 
+        }}>
+          <Card style={{ 
+            width: '450px', 
+            textAlign: 'center',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+          }}>
+            <SuccessAnimation message="Payment Recorded Successfully!" />
+            <p style={{ color: '#64748b', marginBottom: '20px' }}>
+              Receipt Number: {formData.receiptNumber}
+            </p>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
   
   return (
     <Layout>
@@ -455,7 +613,7 @@ const AddPayment: React.FC = () => {
                     <option value="">Select a fee type</option>
                     {feeStructures.map(fee => (
                       <option key={fee.id} value={fee.id}>
-                        {fee.name} - ₹{fee.amount} ({fee.frequency})
+                        {fee.name} - ₹{fee.amount.toLocaleString()} ({fee.frequency})
                       </option>
                     ))}
                   </Select>
@@ -466,7 +624,7 @@ const AddPayment: React.FC = () => {
                   <Input
                     type="number"
                     value={currentFeeAmount}
-                    onChange={(e) => setCurrentFeeAmount(parseFloat(e.target.value) || 0)}
+                    onChange={handleFeeAmountChange}
                     fullWidth
                     min={0}
                     step="0.01"
@@ -477,8 +635,7 @@ const AddPayment: React.FC = () => {
               <AddItemButton 
                 type="button" 
                 onClick={handleAddFeeItem}
-                size="small"
-                variant="secondary"
+                disabled={!currentFeeStructureId}
               >
                 + Add Fee Item
               </AddItemButton>

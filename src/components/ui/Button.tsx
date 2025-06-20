@@ -20,6 +20,17 @@ const spin = keyframes`
   }
 `;
 
+const ripple = keyframes`
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+`;
+
 const ButtonContainer = styled.button<{
   variant: string;
   size: string;
@@ -35,6 +46,8 @@ const ButtonContainer = styled.button<{
   outline: none;
   border: none;
   width: ${(props) => (props.fullWidth ? '100%' : 'auto')};
+  position: relative;
+  overflow: hidden;
   
   /* Size styles */
   ${(props) => {
@@ -69,6 +82,7 @@ const ButtonContainer = styled.button<{
           }
           &:active:not(:disabled) {
             background-color: #cbd5e1;
+            transform: translateY(1px);
           }
         `;
       case 'danger':
@@ -77,9 +91,12 @@ const ButtonContainer = styled.button<{
           color: #ffffff;
           &:hover:not(:disabled) {
             background-color: #dc2626;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.25);
           }
           &:active:not(:disabled) {
             background-color: #b91c1c;
+            transform: translateY(1px);
+            box-shadow: none;
           }
         `;
       case 'success':
@@ -88,20 +105,26 @@ const ButtonContainer = styled.button<{
           color: #ffffff;
           &:hover:not(:disabled) {
             background-color: #059669;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
           }
           &:active:not(:disabled) {
             background-color: #047857;
+            transform: translateY(1px);
+            box-shadow: none;
           }
         `;
       default:
         return `
-          background-color: #2563eb;
+          background-color: #1e40af;
           color: #ffffff;
           &:hover:not(:disabled) {
-            background-color: #1d4ed8;
+            background-color: #1e3a8a;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
           }
           &:active:not(:disabled) {
-            background-color: #1e40af;
+            background-color: #1e3a8a;
+            transform: translateY(1px);
+            box-shadow: none;
           }
         `;
     }
@@ -110,6 +133,25 @@ const ButtonContainer = styled.button<{
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.4);
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    margin-left: -50px;
+    top: 50%;
+    left: 50%;
+    transform: scale(0);
+    opacity: 0;
+  }
+  
+  &:not(:disabled):active::after {
+    animation: ${ripple} 0.4s ease-out;
   }
 `;
 
@@ -121,6 +163,10 @@ const LoaderSpinner = styled.div`
   border-top-color: #ffffff;
   animation: ${spin} 0.8s linear infinite;
   margin-right: 8px;
+`;
+
+const ButtonContent = styled.span`
+  transition: all 0.2s ease-in-out;
 `;
 
 const Button: React.FC<ButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
@@ -145,7 +191,9 @@ const Button: React.FC<ButtonProps & React.ButtonHTMLAttributes<HTMLButtonElemen
       {...props}
     >
       {isLoading && <LoaderSpinner />}
-      {children}
+      <ButtonContent>
+        {children}
+      </ButtonContent>
     </ButtonContainer>
   );
 };

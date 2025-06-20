@@ -30,7 +30,13 @@ const CardContainer = styled.div<{
   overflow: hidden;
   width: ${(props) => (props.fullWidth ? '100%' : 'auto')};
   margin-bottom: 24px;
-  animation: ${(props) => (props.animate ? fadeIn : 'none')} 0.3s ease-out;
+  animation: ${(props) => (props.animate ? fadeIn : 'none')} 0.4s ease-out;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
   
   padding: ${(props) => {
     switch (props.padding) {

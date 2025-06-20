@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Pages
 import Login from './pages/Login';
-import SignUp from './pages/SignUp';  // Import the SignUp component
+import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 import StudentList from './pages/StudentList';
 import AddStudent from './pages/AddStudent';
@@ -12,6 +12,7 @@ import PaymentList from './pages/PaymentList';
 import AddPayment from './pages/AddPayment';
 import FeeStructure from './pages/FeeStructure';
 import Reports from './pages/Reports';
+import TestPlan from './pages/TestPlan';  // Add this import
 
 // CSS
 import './styles/globals.css';
@@ -20,7 +21,7 @@ import './styles/globals.css';
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
   
-  // Show nothing while checking authentication
+  // Show loading animation
   if (loading) {
     return (
       <div style={{ 
@@ -30,7 +31,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
         height: '100vh',
         backgroundColor: '#f1f5f9'
       }}>
-        <p>Loading...</p>
+        <div className="loading-spinner"></div>
       </div>
     );
   }
@@ -50,7 +51,7 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />  {/* Add SignUp route */}
+          <Route path="/signup" element={<SignUp />} />
           
           {/* Protected routes */}
           <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" replace /></ProtectedRoute>} />
@@ -69,6 +70,9 @@ function App() {
           
           {/* Reports route */}
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+          
+          {/* Test Plan route */}
+          <Route path="/test-plan" element={<ProtectedRoute><TestPlan /></ProtectedRoute>} />
           
           {/* Catch-all route */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
