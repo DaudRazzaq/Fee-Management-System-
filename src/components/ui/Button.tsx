@@ -70,6 +70,31 @@ const ButtonContainer = styled.button<{
     }
   }}
   
+  /* Mobile optimizations */
+  @media (max-width: 576px) {
+    ${(props) => {
+      switch (props.size) {
+        case 'small':
+          return `
+            padding: 8px 12px;
+            font-size: 13px;
+          `;
+        case 'large':
+          return `
+            padding: 14px 28px;
+            font-size: 17px;
+          `;
+        default:
+          return `
+            padding: 10px 20px;
+            font-size: 15px;
+          `;
+      }
+    }}
+    
+    min-height: 44px; /* Ensure good touch target */
+  }
+  
   /* Variant styles */
   ${(props) => {
     switch (props.variant) {
@@ -163,9 +188,20 @@ const LoaderSpinner = styled.div`
   border-top-color: #ffffff;
   animation: ${spin} 0.8s linear infinite;
   margin-right: 8px;
+  
+  @media (max-width: 576px) {
+    width: 14px;
+    height: 14px;
+    border-width: 1.5px;
+    margin-right: 6px;
+  }
 `;
 
 const ButtonContent = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   transition: all 0.2s ease-in-out;
 `;
 

@@ -17,25 +17,42 @@ interface CardProps {
   fullWidth?: boolean;
   padding?: 'small' | 'medium' | 'large';
   animate?: boolean;
+  elevation?: 'low' | 'medium' | 'high';
 }
 
 const CardContainer = styled.div<{
   fullWidth?: boolean;
   padding?: string;
   animate?: boolean;
+  elevation?: string;
 }>`
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   width: ${(props) => (props.fullWidth ? '100%' : 'auto')};
   margin-bottom: 24px;
   animation: ${(props) => (props.animate ? fadeIn : 'none')} 0.4s ease-out;
+  
+  box-shadow: ${props => {
+    switch (props.elevation) {
+      case 'low':
+        return '0 1px 3px rgba(0, 0, 0, 0.1)';
+      case 'high':
+        return '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+      default:
+        return '0 4px 6px rgba(0, 0, 0, 0.1)';
+    }
+  }};
+  
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+    box-shadow: ${(props) => props.elevation === 'high' ? 
+      '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : 
+      props.elevation === 'low' ? 
+        '0 2px 4px rgba(0, 0, 0, 0.1)' : 
+        '0 6px 8px rgba(0, 0, 0, 0.1)'
+    };
   }
   
   padding: ${(props) => {
@@ -45,6 +62,17 @@ const CardContainer = styled.div<{
       default: return '24px'; // medium
     }
   }};
+  
+  @media (max-width: 576px) {
+    padding: ${(props) => {
+      switch (props.padding) {
+        case 'small': return '10px';
+        case 'large': return '20px';
+        default: return '16px';
+      }
+    }};
+    border-radius: 8px;
+  }
 `;
 
 const CardTitle = styled.h3`
@@ -54,6 +82,12 @@ const CardTitle = styled.h3`
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid #e2e8f0;
+  
+  @media (max-width: 576px) {
+    font-size: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+  }
 `;
 
 const Card: React.FC<CardProps & React.HTMLAttributes<HTMLDivElement>> = ({
@@ -62,6 +96,7 @@ const Card: React.FC<CardProps & React.HTMLAttributes<HTMLDivElement>> = ({
   fullWidth = false,
   padding = 'medium',
   animate = true,
+  elevation = 'medium',
   ...props
 }) => {
   return (
@@ -69,6 +104,7 @@ const Card: React.FC<CardProps & React.HTMLAttributes<HTMLDivElement>> = ({
       fullWidth={fullWidth} 
       padding={padding} 
       animate={animate}
+      elevation={elevation}
       {...props}
     >
       {title && <CardTitle>{title}</CardTitle>}
