@@ -12,7 +12,7 @@ import PaymentList from './pages/PaymentList';
 import AddPayment from './pages/AddPayment';
 import FeeStructure from './pages/FeeStructure';
 import Reports from './pages/Reports';
-import TestPlan from './pages/TestPlan';  // Add this import
+import TestPlan from './pages/TestPlan';
 
 // CSS
 import './styles/globals.css';
@@ -44,17 +44,46 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// Auth Route wrapper for login/signup pages - redirects to dashboard if logged in
+const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  // Show loading animation
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        backgroundColor: '#f1f5f9'
+      }}>
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+  
+  // Redirect to dashboard if already authenticated
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+          {/* Public routes with redirection if logged in */}
+          <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+          <Route path="/signup" element={<AuthRoute><SignUp /></AuthRoute>} />
+          
+          {/* Root path redirects to login for non-authenticated users */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* Protected routes */}
-          <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" replace /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           
           {/* Student routes */}
@@ -75,7 +104,7 @@ function App() {
           <Route path="/test-plan" element={<ProtectedRoute><TestPlan /></ProtectedRoute>} />
           
           {/* Catch-all route */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
